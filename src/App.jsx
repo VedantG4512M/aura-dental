@@ -13,7 +13,7 @@ function App() {
   const [bookingPrefill, setBookingPrefill] = useState(null);
   
   // Hash Routing State
-  const [isAdminView, setIsAdminView] = useState(window.location.hash === '#/admin');
+  const [isAdminView, setIsAdminView] = useState(window.location.hash === '#/hq-portal');
 
   // Real-time telemetry events ledger
   const [telemetryLogs, setTelemetryLogs] = useState([]);
@@ -26,9 +26,9 @@ function App() {
   // Listen to hash changes for routing
   useEffect(() => {
     const handleHashChange = () => {
-      const isCurrentlyAdmin = window.location.hash === '#/admin';
+      const isCurrentlyAdmin = window.location.hash === '#/hq-portal';
       setIsAdminView(isCurrentlyAdmin);
-      logTelemetry(`Route shifted to: ${isCurrentlyAdmin ? '/admin' : '/' + activeTab}`, 'system');
+      logTelemetry(`Route shifted to: ${isCurrentlyAdmin ? '/hq-portal' : '/' + activeTab}`, 'system');
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -66,7 +66,7 @@ function App() {
 
   // Navigating to Admin
   const navigateToAdmin = () => {
-    window.location.hash = '#/admin';
+    window.location.hash = '#/hq-portal';
   };
 
   const navigateToPublic = () => {
@@ -144,7 +144,7 @@ function App() {
       }}>
         <span>© 2026 AURA BIOLOGICAL DENTAL SANCTUARY. ALL RIGHTS RESERVED.</span>
         <div style={{ display: 'flex', gap: '16px' }}>
-          <a href="#/admin" style={{ fontWeight: '600', color: 'var(--accent-primary)' }}>HQ Ledger Portal</a>
+          <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>HQ SECURE PORTAL</span>
           <span>•</span>
           <span>HYPER-STERILE ENVIRONMENTS</span>
         </div>

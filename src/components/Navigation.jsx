@@ -107,27 +107,7 @@ const Navigation = ({ activeTab, onChangeTab, onNavigateAdmin }) => {
       {/* Controls: Theme & Admin Portal trigger & Mobile Toggle */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         
-        {/* Isolated Admin Portal link */}
-        <button
-          onClick={onNavigateAdmin}
-          className="glass-panel magnetic-btn"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '50px',
-            border: '1px solid var(--accent-primary)',
-            color: 'var(--accent-primary)',
-            fontSize: '0.8rem',
-            fontWeight: '700',
-            transition: 'var(--transition-smooth)'
-          }}
-          title="Administrative Portal"
-        >
-          <Shield size={12} />
-          <span>Admin Portal</span>
-        </button>
+
 
         <button
           onClick={toggleTheme}
@@ -196,23 +176,7 @@ const Navigation = ({ activeTab, onChangeTab, onNavigateAdmin }) => {
               </button>
             );
           })}
-          <button
-            onClick={() => { setIsMenuOpen(false); onNavigateAdmin(); }}
-            style={{
-              fontSize: '1rem',
-              fontWeight: '700',
-              color: 'var(--accent-primary)',
-              textAlign: 'left',
-              padding: '12px 8px',
-              borderTop: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              width: '100%'
-            }}
-          >
-            <Shield size={16} /> Admin Portal
-          </button>
+
         </div>
       )}
 

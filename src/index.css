@@ -5,24 +5,24 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  /* Color Palette - Premium Dark Luxury Default */
-  --bg-primary: #05070a;      /* Deep Obsidian Charcoal */
-  --bg-secondary: #0c0f16;    /* Dark Onyx */
-  --bg-tertiary: #131924;     /* Deep Steel */
-  --text-primary: #f3f4f6;    /* Soft Mist White */
-  --text-secondary: #9ca3af;  /* Slate Grey */
-  --text-muted: #4b5563;      /* Muted Charcoal */
+  /* Color Palette - Clinical Dark Theme Default */
+  --bg-primary: #061018;      /* Deep Sterile Cyan-Obsidian */
+  --bg-secondary: #0b1822;    /* Clean Ocean Teal-Slate */
+  --bg-tertiary: #10212e;     /* Hygienic Steel Blue */
+  --text-primary: #f0f6fc;    /* Sterile Clean White */
+  --text-secondary: #8fb1c6;  /* Soft Cyan Grey */
+  --text-muted: #52748b;      /* Deep Steel Grey */
   
-  /* Champagne Gold & Luxury Accents */
-  --accent-primary: #c5a880;  /* Champagne Gold */
-  --accent-secondary: #e5cda8;/* Light Gold */
-  --accent-light: rgba(197, 168, 128, 0.1);
-  --border-color: rgba(197, 168, 128, 0.12);
-  --glass-bg: rgba(12, 15, 22, 0.7);
-  --glass-border: rgba(197, 168, 128, 0.15);
+  /* Clinical Teal & Clean Dental Cyan Accents */
+  --accent-primary: #00bfa5;  /* Clinical Teal / Mint Green */
+  --accent-secondary: #0ea5e9;/* Clean Dental Cyan */
+  --accent-light: rgba(0, 191, 165, 0.08);
+  --border-color: rgba(0, 191, 165, 0.15);
+  --glass-bg: rgba(11, 24, 34, 0.75);
+  --glass-border: rgba(0, 191, 165, 0.18);
   
-  --shadow-premium: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 1px 0 rgba(197, 168, 128, 0.2);
-  --gold-glow: 0 0 20px rgba(197, 168, 128, 0.2);
+  --shadow-premium: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 1px 0 rgba(0, 191, 165, 0.2);
+  --gold-glow: 0 0 20px rgba(0, 191, 165, 0.2);
 
   /* Global Animations */
   --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);

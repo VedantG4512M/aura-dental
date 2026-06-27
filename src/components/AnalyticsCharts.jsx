@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Clock, Users, ArrowUpRight, Cpu, AlertTriangle } from 'lucide-react';
+import { Activity, Clock, Users, ArrowUpRight, Cpu, FileSpreadsheet, CheckSquare } from 'lucide-react';
 
-const AnalyticsCharts = ({ telemetryLogs }) => {
+const AnalyticsCharts = ({ telemetryLogs, appointments = [] }) => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
@@ -17,19 +17,73 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
     setLogs(defaultLogs);
   }, [telemetryLogs]);
 
-  // SVG Chart Mock Data points for last 7 days of bookings
-  const conversionData = [
-    { day: 'Mon', bookings: 12, views: 120 },
-    { day: 'Tue', bookings: 18, views: 145 },
-    { day: 'Wed', bookings: 15, views: 130 },
-    { day: 'Thu', bookings: 22, views: 190 },
-    { day: 'Fri', bookings: 30, views: 240 },
-    { day: 'Sat', bookings: 25, views: 210 },
-    { day: 'Sun', bookings: 28, views: 225 },
-  ];
+  // --- DYNAMIC METRICS CALCULATION ---
+  // Base views simulating traffic (1,260 + new hits)
+  const baseViews = 1260 + (telemetryLogs.filter(l => l.type === 'action').length * 15);
+  const totalBookings = appointments.length;
+  
+  // Calculate status counts
+  const approvedCount = appointments.filter(a => a.status === 'Approved').length;
+  const pendingCount = appointments.filter(a => a.status === 'Pending').length;
+  const completedCount = appointments.filter(a => a.status === 'Completed').length;
+
+  // Conversion rate: Bookings relative to page views
+  const conversionRate = baseViews > 0 ? ((totalBookings / baseViews) * 100).toFixed(1) : '0.0';
+
+  // --- SERVICE PROGRAM DISTRIBUTION ---
+  // Categorize appointments by treatment types
+  const cosmeticServices = ['Cosmetic Veneers', 'Biological Enamel Whitening', 'Clear Aligners', 'Direct Composite Bonding', 'Orthodontic Clear Aligners', 'Micro-thin Porcelain Veneers'];
+  const restorativeServices = ['Crystalline Zirconia Implants', 'Metal-Free Ceramic Crowns', 'Glass Ionomer Fillings', 'PRF Bone Grafting', 'Restorative Crown / Filling'];
+  
+  let cosmeticCount = 0;
+  let restorativeCount = 0;
+  let therapeuticCount = 0;
+
+  appointments.forEach(apt => {
+    const service = apt.service;
+    if (cosmeticServices.some(s => service.toLowerCase().includes(s.toLowerCase()))) {
+      cosmeticCount++;
+    } else if (restorativeServices.some(s => service.toLowerCase().includes(s.toLowerCase()))) {
+      restorativeCount++;
+    } else {
+      therapeuticCount++;
+    }
+  });
+
+  const cosmeticPercent = totalBookings > 0 ? Math.round((cosmeticCount / totalBookings) * 100) : 0;
+  const restorativePercent = totalBookings > 0 ? Math.round((restorativeCount / totalBookings) * 100) : 0;
+  const therapeuticPercent = totalBookings > 0 ? Math.round((therapeuticCount / totalBookings) * 100) : 0;
+
+  // --- WEEKLY TRAFFIC CURVE (DYNAMICS) ---
+  // Build dynamic weekly bookings count (seeding standard mock values and adding actual bookings from ledger)
+  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  // Base views and bookings values per day
+  const baseViewsPerDay = [120, 145, 130, 190, 240, 210, 225];
+  const baseBookingsPerDay = [2, 3, 2, 4, 6, 5, 5]; // Seed baseline
+
+  // Distribute actual appointments onto their matching days of week if matching index
+  appointments.forEach(apt => {
+    if (apt.date) {
+      const dateObj = new Date(apt.date);
+      const dayIndex = dateObj.getDay(); // 0 (Sun) to 6 (Sat)
+      // Map JS getDay (0=Sun, 1=Mon...6=Sat) to index of daysOfWeek (0=Mon...6=Sun)
+      const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+      if (mappedIndex >= 0 && mappedIndex < 7) {
+        baseBookingsPerDay[mappedIndex] += 1;
+        baseViewsPerDay[mappedIndex] += 12; // Simulate traffic hit per booking
+      }
+    }
+  });
+
+  const conversionData = daysOfWeek.map((day, idx) => ({
+    day,
+    views: baseViewsPerDay[idx],
+    bookings: baseBookingsPerDay[idx] * 8 // scale bookings factor for visibility on 0-250 SVG chart
+  }));
 
   // SVG Line Chart coordinates calculations
-  const maxVal = 250;
+  const maxVal = 300;
   const width = 450;
   const height = 150;
   const padding = 30;
@@ -63,12 +117,13 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '16px'
       }}>
-        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Total Views Card */}
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>TOTAL VIEWS</span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>1,260</h3>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>{baseViews.toLocaleString()}</h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '6px' }}>
-              <ArrowUpRight size={12} /> +14.2% today
+              <ArrowUpRight size={12} /> Live tracking active
             </span>
           </div>
           <div style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)', padding: '12px', borderRadius: '12px' }}>
@@ -76,12 +131,13 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Live Bookings Card */}
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>APPOINTMENTS</span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>150</h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '6px' }}>
-              <ArrowUpRight size={12} /> +8.1% today
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>ACTIVE LEDGER</span>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>{totalBookings}</h3>
+            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+              {approvedCount} Approved • {pendingCount} Pending
             </span>
           </div>
           <div style={{ backgroundColor: 'rgba(14, 165, 233, 0.1)', color: 'var(--accent-secondary)', padding: '12px', borderRadius: '12px' }}>
@@ -89,29 +145,31 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Conversion Rate Card */}
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>CONVERSION RATE</span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>11.9%</h3>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>{conversionRate}%</h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '6px' }}>
-              <ArrowUpRight size={12} /> +2.3% this week
+              <ArrowUpRight size={12} /> Bookings vs Traffic
             </span>
           </div>
-          <div style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)', color: 'var(--gold)', padding: '12px', borderRadius: '12px' }}>
+          <div style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)', padding: '12px', borderRadius: '12px' }}>
             <Cpu size={20} />
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Completed Sessions Card */}
+        <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>AVG PAGE LOAD</span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>0.48s</h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '6px' }}>
-              Excellent (FCP 0.2s)
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>COMPLETED SESSIONS</span>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '4px' }}>{completedCount}</h3>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '6px' }}>
+              Archive records synced
             </span>
           </div>
-          <div style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)', padding: '12px', borderRadius: '12px' }}>
-            <Clock size={20} />
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', color: '#10b981', padding: '12px', borderRadius: '12px' }}>
+            <CheckSquare size={20} />
           </div>
         </div>
       </div>
@@ -135,7 +193,7 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
               
               {/* Labels for Y-Axis */}
               <text x={padding - 5} y={height - padding} textAnchor="end" fill="var(--text-muted)" fontSize="8">0</text>
-              <text x={padding - 5} y={padding + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">250</text>
+              <text x={padding - 5} y={padding + 5} textAnchor="end" fill="var(--text-muted)" fontSize="8">300</text>
 
               {/* Day Labels */}
               {conversionData.map((d, index) => {
@@ -180,57 +238,103 @@ const AnalyticsCharts = ({ telemetryLogs }) => {
           {/* Legend */}
           <div style={{ display: 'flex', gap: '20px', marginTop: '12px', justifyContent: 'center', fontSize: '0.75rem' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--accent-secondary)', fontWeight: '600' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-secondary)' }}></span> Page Views
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-secondary)' }}></span> Daily Page Views
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--accent-primary)', fontWeight: '600' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)' }}></span> Bookings
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)' }}></span> Bookings (Scale x8)
             </span>
           </div>
         </div>
 
-        {/* Real-time Telemetry Event Log */}
-        <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', height: '248px' }}>
-          <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>Live Telemetry Console</span>
-            <span className="live-pulse" style={{
-              width: '8px',
-              height: '8px',
-              backgroundColor: '#10b981',
-              borderRadius: '50%',
-              display: 'inline-block'
-            }}></span>
+        {/* Dynamic Category Program Distribution */}
+        <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileSpreadsheet size={16} style={{ color: 'var(--accent-primary)' }} />
+            Treatment Program Distribution
           </h4>
-          <div style={{
-            flexGrow: 1,
-            backgroundColor: 'rgba(0,0,0,0.15)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '10px',
-            padding: '12px',
-            fontFamily: 'ui-monospace, monospace',
-            fontSize: '0.75rem',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color: '#a7f3d0',
-            textAlign: 'left'
-          }}>
-            {logs.slice().reverse().map((log, index) => (
-              <div key={index} style={{
-                borderBottom: '1px solid rgba(255,255,255,0.03)',
-                paddingBottom: '4px',
-                display: 'flex',
-                gap: '8px'
-              }}>
-                <span style={{ color: '#64748b' }}>[{log.time}]</span>
-                <span style={{
-                  color: log.type === 'perf' ? '#67e8f9' : log.type === 'action' ? '#fbbf24' : '#e2e8f0'
-                }}>
-                  {log.event}
-                </span>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '-8px', textAlign: 'left' }}>
+            Breakdown of requested clinical programs by category.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '4px' }}>
+            {/* Cosmetic Artistry Bar */}
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
+                <span>Cosmetic Artistry</span>
+                <span style={{ color: 'var(--accent-primary)' }}>{cosmeticCount} ({cosmeticPercent}%)</span>
               </div>
-            ))}
+              <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${cosmeticPercent}%`, height: '100%', backgroundColor: 'var(--accent-primary)', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+              </div>
+            </div>
+
+            {/* Bio-Restorative Bar */}
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
+                <span>Bio-Restorative Reconstruction</span>
+                <span style={{ color: 'var(--accent-secondary)' }}>{restorativeCount} ({restorativePercent}%)</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${restorativePercent}%`, height: '100%', backgroundColor: 'var(--accent-secondary)', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+              </div>
+            </div>
+
+            {/* Therapeutic Prevention Bar */}
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '700', marginBottom: '6px' }}>
+                <span>Therapeutic Prevention</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{therapeuticCount} ({therapeuticPercent}%)</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${therapeuticPercent}%`, height: '100%', backgroundColor: 'var(--text-secondary)', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Real-time Telemetry Event Log */}
+      <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', height: '248px' }}>
+        <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Live Telemetry Console</span>
+          <span className="live-pulse" style={{
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#10b981',
+            borderRadius: '50%',
+            display: 'inline-block'
+          }}></span>
+        </h4>
+        <div style={{
+          flexGrow: 1,
+          backgroundColor: 'rgba(0,0,0,0.15)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '10px',
+          padding: '12px',
+          fontFamily: 'ui-monospace, monospace',
+          fontSize: '0.75rem',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          color: '#a7f3d0',
+          textAlign: 'left'
+        }}>
+          {logs.slice().reverse().map((log, index) => (
+            <div key={index} style={{
+              borderBottom: '1px solid rgba(255,255,255,0.03)',
+              paddingBottom: '4px',
+              display: 'flex',
+              gap: '8px'
+            }}>
+              <span style={{ color: '#64748b' }}>[{log.time}]</span>
+              <span style={{
+                color: log.type === 'perf' ? '#67e8f9' : log.type === 'action' ? '#fbbf24' : '#e2e8f0'
+              }}>
+                {log.event}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
       

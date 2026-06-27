@@ -539,7 +539,7 @@ const Admin = ({ telemetryLogs, logTelemetry, onReturn }) => {
 
           {/* VIEW: PERFORMANCE ANALYTICS */}
           {adminTab === 'analytics' && (
-            <AnalyticsCharts telemetryLogs={telemetryLogs} />
+            <AnalyticsCharts telemetryLogs={telemetryLogs} appointments={appointments} />
           )}
 
         </div>
