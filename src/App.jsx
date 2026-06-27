@@ -50,7 +50,7 @@ function App() {
       ease: 'power2.inOut',
       onComplete: () => {
         setDisplayedTab(nextTab);
-        window.scrollTo(0, 0); // Reset scroll position to top
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); // Reset scroll position to top instantly
         
         // Zoom-in fade new page
         gsap.fromTo('.page-content-wrapper',

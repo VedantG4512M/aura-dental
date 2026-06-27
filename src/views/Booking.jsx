@@ -16,6 +16,11 @@ const Booking = ({ prefillData, onResetPrefill, logTelemetry }) => {
   });
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Reset scroll position on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
   // Apply prefill data if present
   useEffect(() => {
     logTelemetry('Cinematic Booking view rendered', 'system');

@@ -66,6 +66,7 @@ const Services = ({ onChangeTab, setBookingPrefill, logTelemetry }) => {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     logTelemetry('Treatments page rendered', 'system');
 
     // IntersectionObserver to reveal elements on scroll

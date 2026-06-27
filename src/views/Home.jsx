@@ -49,6 +49,7 @@ const Home = ({ onChangeTab, setBookingPrefill, logTelemetry }) => {
   const [reviewIndex, setReviewIndex] = useState(0);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     logTelemetry('Cinematic Scroll Home view mounted', 'system');
 
     const ctx = gsap.context(() => {
